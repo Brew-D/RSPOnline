@@ -103,3 +103,7 @@ InitTestScene*.unity*
 /[Aa]ssets/[Pp]hoton/[Pp]hoton[Uu]nity[Nn]etworking/[Rr]esources/PhotonServerSettings.asset.meta
 Assets/**/PhotonVoiceSettings.asset
 Assets/**/PhotonChatSettings.asset
+Assets/**/google-services*
+Assets/**/google-services*.meta
+Assets/**/GoogleService-Info.plist
+Assets/**/GoogleService-Info.plist.meta
