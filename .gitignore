@@ -97,3 +97,9 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Added by Brew_D
+/[Aa]ssets/[Pp]hoton/[Pp]hoton[Uu]nity[Nn]etworking/[Rr]esources/PhotonServerSettings.asset
+/[Aa]ssets/[Pp]hoton/[Pp]hoton[Uu]nity[Nn]etworking/[Rr]esources/PhotonServerSettings.asset.meta
+Assets/**/PhotonVoiceSettings.asset
+Assets/**/PhotonChatSettings.asset
