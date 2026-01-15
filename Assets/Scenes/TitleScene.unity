@@ -1497,6 +1497,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 414916763}
   m_CullTransparentMesh: 1
+--- !u!1 &458278069
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 458278071}
+  - component: {fileID: 458278070}
+  m_Layer: 0
+  m_Name: FirebaseDatabaseManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &458278070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 458278069}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bf768412e532fe4eaf83f1de5884330, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FirebaseDatabaseManager
+--- !u!4 &458278071
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 458278069}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &494487934
 GameObject:
   m_ObjectHideFlags: 0
@@ -1692,8 +1736,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Button
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 5566f1620266078418b1d913faedf269, type: 2}
+  m_sharedMaterial: {fileID: 6119256500403366528, guid: 5566f1620266078418b1d913faedf269, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -2271,7 +2315,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b824f02804f3ff24a8205a86580c418e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FirebaseAuthenticationManager
-  startButton: {fileID: 0}
+  startButton: {fileID: 1693167775}
+  startButtonText: {fileID: 597537244}
   loginEmailField: {fileID: 723268193}
   loginPasswordField: {fileID: 734896517}
   registerEmailField: {fileID: 51279482}
@@ -5611,3 +5656,4 @@ SceneRoots:
   - {fileID: 405473243}
   - {fileID: 735986715}
   - {fileID: 1267079900}
+  - {fileID: 458278071}

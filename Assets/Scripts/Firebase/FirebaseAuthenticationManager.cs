@@ -6,6 +6,7 @@ using System.Collections;
 using System.Threading.Tasks; // 비동기 작업 관련입니다.
 using TMPro; // TextMeshPro계열 관련 기능을 위해 필요합니다.
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI; // UnityEngine의 UI 관련된 코드를 작성 시 필요합니다.
 
 public class FirebaseAuthenticationManager : MonoBehaviour
@@ -15,7 +16,8 @@ public class FirebaseAuthenticationManager : MonoBehaviour
     public static DatabaseReference dbRef; // 데이터베이스에 대한 정보를 여러 씬에서 쓰기 위한 정적 변수입니다.
 
     [Header("게임 시작 버튼")]
-    [SerializeField] Button startButton;
+    [SerializeField] Button startButton; // 안내창 버튼 연결 바랍니다.
+    [SerializeField] TextMeshProUGUI startButtonText; // 안내창 버튼 TMP 연결 바랍니다.
 
     [Header("로그인 입력 필드")]
     [SerializeField] TMP_InputField loginEmailField;
@@ -143,10 +145,16 @@ public class FirebaseAuthenticationManager : MonoBehaviour
         else
         {
             user = LoginTask.Result.User;
+
+            PlayerSession.UserId = user.UserId;
+            FirebaseDatabaseManager.Instance.Initialize(user.UserId);
+
             noticeTitle.text = "로그인 성공";
             nicknameField.text = user.DisplayName;
             noticeMessage.text = "반갑습니다," + user.DisplayName + "님!";
-            //startButton.interactable = true;
+
+            startButtonText.text = "게임 시작";
+            startButton.onClick.AddListener(SceneChange);
         }
         //타이틀매니저를 통해 안내창을 팝업시킵니다.
         titleMgr.PopUpNoticePanel();
@@ -224,9 +232,13 @@ public class FirebaseAuthenticationManager : MonoBehaviour
                 {
                     noticeTitle.text = "생성 완료";
                     noticeMessage.text = "생성 완료! 반갑습니다, " + user.DisplayName + "님!";
+
+
+                    FirebaseDatabaseManager.Instance.Initialize(user.UserId);
+                    FirebaseDatabaseManager.Instance.CreateInitialPlayerData(userName);
+
                     //startButton.interactable = true;
                 }
-
                 //타이틀매니저를 통해 안내창을 팝업시킵니다.
                 titleMgr.PopUpNoticePanel();
             }
@@ -240,6 +252,11 @@ public class FirebaseAuthenticationManager : MonoBehaviour
     {
         noticeTitle.text = "";
         noticeMessage.text = "";
+    }
+
+    public void SceneChange()
+    {
+        SceneManager.LoadScene(1);
     }
 
 }
