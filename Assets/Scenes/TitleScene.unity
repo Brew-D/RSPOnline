@@ -2325,6 +2325,7 @@ MonoBehaviour:
   noticeTitle: {fileID: 2018740149}
   noticeMessage: {fileID: 2075216308}
   titleMgr: {fileID: 1267079899}
+  connector: {fileID: 405473242}
 --- !u!4 &735986715
 Transform:
   m_ObjectHideFlags: 0

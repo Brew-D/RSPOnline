@@ -41,11 +41,15 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     private void Awake()
     {
+        if(PhotonNetwork.AutomaticallySyncScene != true)
+            PhotonNetwork.AutomaticallySyncScene = true;
         #region 인스펙터 연결 확인용 코드
         if (playerKillStatText == null)
             Debug.LogWarning("LobbyManager - 플레이어 킬 수 스탯 표기를 위한 텍스트가 연결되지 않았습니다!");
         if (playerGoldText == null)
             Debug.LogWarning("LobbyManager - 플레이어 보유 골드 수 표기를 위한 텍스트가 연결되지 않았습니다!");
+        if (playerNicknameText == null)
+            Debug.LogWarning("LobbyManager - 플레이어 닉네임 표기를 위한 텍스트가 연결되지 않았습니다!");
         if (createRoomPanel == null)
             Debug.LogError("LobbyManager - 방 생성 패널이 연결되지 않았습니다!");
         if (roomTitleInput == null)
@@ -58,6 +62,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks
             Debug.LogError("LobbyManager - 비밀방 입장 시 비밀번호 입력을 위한 패널이 연결되지 않았습니다!");
         if (enterRoomPasswordInput == null)
             Debug.LogError("LobbyManager - 비밀방 입장 시 비밀번호 입력 칸이 연결되지 않았습니다!");
+        if (roomPrefab == null)
+            Debug.LogError("LobbyManager - 방 생성 시 출력될 방 입장 버튼 프리팹이 연결되지 않았습니다!");
+        if (roomListPanel == null)
+            Debug.LogError("LobbyManager - 방 목록 출력용 패널이 연결되지 않았습니다!");
         #endregion
     }
 
@@ -65,8 +73,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     {
         //플레이어에 대한 정보를 우선 받아온 다음 로비에 진입하겠습니다.
         FirebaseDatabaseManager.Instance.LoadPlayerData();
-        //이 매니저는 로비 씬에만 존재하도록 설계할 것이므로, Lobby에 진입하는 코드를 작성합니다.
-        PhotonNetwork.JoinLobby();
+
+        Debug.Log(PhotonNetwork.NetworkClientState);
+
+
     }
 
     private void OnEnable()
@@ -77,10 +87,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     private void OnDisable()
     {
         FirebaseDatabaseManager.Instance.OnPlayerDataChanged -= UpdateStats;
-    }
-    public override void OnJoinedLobby()
-    {
-        Debug.Log("로비에 입장하였습니다.");
     }
 
     public override void OnLeftLobby()
@@ -182,6 +188,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     public void CreateRoom()
     {
+        if (!PhotonNetwork.InLobby) return;
         #region 방 옵션 설정
         //방 옵션을 새롭게 생성합니다.
         RoomOptions roomOptions = RoomOptionCreation();
@@ -215,7 +222,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         ////방이 가지는 옵션들을 플레이어한테 보여줄, 방 입장용 버튼을 방 리스트 패널의 자식 오브젝트로 생성합니다.
         //var room = Instantiate(roomPrefab, roomListPanel);
 
-        
     }
     
     public void UpdateRoomList()

@@ -35,6 +35,9 @@ public class FirebaseAuthenticationManager : MonoBehaviour
     [Header("타이틀 화면 매니저")]
     [SerializeField] TitleManager titleMgr;
 
+    [Header("서버 연결용 오브젝트")]
+    [SerializeField] ServerConnector connector;
+
     //이 매니저만 접근 가능한, 에러 발생 시 해당 에러에 대해 전달하기 위한 문자열입니다.
     private string message;
     //안내창에 작성할 위 메세지에 대해, 해당 메세지가 나타내는 큰 틀을 적어줄 문자열입니다.
@@ -85,6 +88,10 @@ public class FirebaseAuthenticationManager : MonoBehaviour
                 Debug.LogWarning("안내 창의 제목 텍스트가 연결되지 않았습니다!");
             if(noticeMessage == null)
                 Debug.LogWarning("안내 창의 메세지 텍스트가 연결되지 않았습니다!");
+            if (titleMgr == null)
+                Debug.LogWarning("타이틀 화면 매니저가 연결되지 않았습니다!");
+            if (connector == null)
+                Debug.LogWarning("서버 연결용 오브젝트가 연결되지 않았습니다!");
             #endregion
         }
         );
@@ -154,7 +161,7 @@ public class FirebaseAuthenticationManager : MonoBehaviour
             noticeMessage.text = "반갑습니다," + user.DisplayName + "님!";
 
             startButtonText.text = "게임 시작";
-            startButton.onClick.AddListener(SceneChange);
+            startButton.onClick.AddListener(connector.ConnectToServer);
         }
         //타이틀매니저를 통해 안내창을 팝업시킵니다.
         titleMgr.PopUpNoticePanel();
@@ -253,10 +260,4 @@ public class FirebaseAuthenticationManager : MonoBehaviour
         noticeTitle.text = "";
         noticeMessage.text = "";
     }
-
-    public void SceneChange()
-    {
-        SceneManager.LoadScene(1);
-    }
-
 }
