@@ -147,7 +147,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
         //플레이어 조작 등과 관련된 기능인, 플레이어매니저를 우선 가져옵니다.
         PlayerManager playerCtrl = player.GetComponent<PlayerManager>();
         //중력을 비활성화하여 떨어지지 않도록 합니다.
-        playerCtrl.SetGravity(false);
+        playerCtrl.SetControlMode(PlayerControlMode.Room);
     }
 
     /// <summary>
@@ -278,6 +278,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
         PhotonNetwork.CurrentRoom.IsOpen = false;
         PhotonNetwork.CurrentRoom.IsVisible = false;
 
+        
         //인게임 세션으로 들어갑니다.
         PhotonNetwork.LoadLevel("InGameScene");
     }
