@@ -163,8 +163,8 @@ MonoBehaviour:
   moveSpeed: 5
   gravity: -9.8
   jumpForce: 5
+  coyoteTime: 0.15
   useGravity: 0
-  groundCheckRadius: 0.2
   groundCheckDistance: 0.3
   ground:
     serializedVersion: 2

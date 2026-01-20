@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 {
     public static GameManager Instance;
     [SerializeField] GameObject playerPrefab;
+
     void Start()
     {
         //싱글톤 패턴을 사용합니다. 단, 하나의 게임 세션 내에서만 존재할 것이므로 파괴 방지는 하지 않습니다.

@@ -2,6 +2,7 @@
 using Photon.Pun.Demo.PunBasics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEngine.GraphicsBuffer;
 
 public enum PlayerControlMode
 {
@@ -45,7 +46,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks, IPunObservable
     private bool isGrounded = false;      // 땅에 닿고 있는지 여부를 확인합니다. 공중에서 시작하므로 시작값은 false입니다.
     private bool raycastGrounded = false; // 바닥에 레이캐스트가 닿았는지 여부를 확인합니다. 공중에서 시작하므로 시작값은 false입니다.
 
-    private float coyoteTimeChecker = 0;
+    private float coyoteTimeChecker = 0;  // 코요테 타임(바닥을 밟고 있다가 점프 기능을 사용하지 않고 체공한 경우 점프가 가능한 시간을 제공) 확인용 변수입니다.
     private void Awake()
     {
         //포톤 뷰 기준으로 캐릭터가 생성될 텐데, 플레이어의 포톤 뷰일 경우에만 작동하게 설계합니다.
@@ -63,7 +64,16 @@ public class PlayerManager : MonoBehaviourPunCallbacks, IPunObservable
     {
         //"내가 조작하는 캐릭터에 한하여" 플레이어의 입력을 받도록 합니다.
         if (photonView.IsMine == true)
+        {
             playerInput.enabled = true;
+        }
+    }
+
+    private void Start()
+    {
+        //내가 조작하는 캐릭터일 경우, 카메라가 따라올 대상을 해당 캐릭터로 설정합니다.
+        if(photonView.IsMine == true)
+            Camera.main.GetComponent<CameraMovement>().target = transform;
     }
 
     private void OnDisable()
@@ -269,6 +279,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks, IPunObservable
             ground
         );
     }
+    
 
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
