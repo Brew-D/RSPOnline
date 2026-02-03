@@ -3,7 +3,8 @@
 
 
 ## 사용 에셋
-- Free CC0 Melee Weapons Pack ( By 3dmodelscc0 )
+- (CC0) Melee Weapons Pack ( By 3dmodelscc0 )
   - https://3dmodelscc0.itch.io/free-cc0-melee-weapons-pack
 
-  
+- (CC0) Animated Robot ( By Quaternius )
+  - https://quaternius.itch.io/lowpoly-robot

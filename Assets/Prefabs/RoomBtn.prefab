@@ -148,6 +148,7 @@ GameObject:
   - component: {fileID: 6207275389420765127}
   - component: {fileID: 70364819103903967}
   - component: {fileID: 7811558616962596257}
+  - component: {fileID: 4085310656604261448}
   m_Layer: 5
   m_Name: RoomBtn
   m_TagString: Untagged
@@ -259,6 +260,22 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &4085310656604261448
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6986429808305594383}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d79f04624732d44f8005fad45b6304d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoomButton
+  title: {fileID: 1542880129057581704}
+  userCount: {fileID: 981219136233209585}
+  locker: {fileID: 3171600901520268027}
+  joinButton: {fileID: 7811558616962596257}
 --- !u!1 &7050999905871143265
 GameObject:
   m_ObjectHideFlags: 0

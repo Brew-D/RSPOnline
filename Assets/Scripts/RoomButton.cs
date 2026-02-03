@@ -1,4 +1,5 @@
 ﻿using ExitGames.Client.Photon;
+using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
 using UnityEngine;
@@ -10,6 +11,7 @@ public class RoomButton : MonoBehaviour
     [SerializeField] TextMeshProUGUI title;
     [SerializeField] TextMeshProUGUI userCount;
     [SerializeField] Image locker;
+    [SerializeField] Button joinButton;
 
     string roomId; // 방의 아이디값
     bool hasPassword; // 방의 비밀방(비밀번호 존재) 여부
@@ -49,5 +51,21 @@ public class RoomButton : MonoBehaviour
 
         //비밀번호가 존재하는지 여부에 따라 비밀방을 나타내는 자물쇠의 출현 여부를 결정합니다.
         locker.gameObject.SetActive(HasPassword);
+
+        joinButton.onClick.RemoveAllListeners();
+        joinButton.onClick.AddListener(OnClickJoinRoom);
+    }
+
+    public void OnClickJoinRoom()
+    {
+        // 비밀번호가 있는 방이면 (추후 팝업 처리 가능)
+        if (HasPassword)
+        {
+            Debug.Log("비밀번호가 필요한 방입니다.");
+            // PasswordPopup.Open(roomId); ← 나중에 연결
+            return;
+        }
+
+        PhotonNetwork.JoinRoom(roomId);
     }
 }

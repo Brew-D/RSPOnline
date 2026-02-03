@@ -161,7 +161,7 @@ public class FirebaseAuthenticationManager : MonoBehaviour
             noticeMessage.text = "반갑습니다," + user.DisplayName + "님!";
 
             startButtonText.text = "게임 시작";
-            startButton.onClick.AddListener(connector.ConnectToServer);
+            startButton.onClick.AddListener(ChangeToLobby);
         }
         //타이틀매니저를 통해 안내창을 팝업시킵니다.
         titleMgr.PopUpNoticePanel();
@@ -250,6 +250,11 @@ public class FirebaseAuthenticationManager : MonoBehaviour
                 titleMgr.PopUpNoticePanel();
             }
         }
+    }
+
+    private void ChangeToLobby()
+    {
+        SceneManager.LoadScene(1);
     }
 
     /// <summary>

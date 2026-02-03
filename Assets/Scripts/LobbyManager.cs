@@ -4,6 +4,7 @@ using Photon.Realtime;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -21,20 +22,17 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     [SerializeField] CanvasGroup createRoomPanel;
     [SerializeField] TMP_InputField roomTitleInput;
     [SerializeField] TMP_InputField roomIdInput;
-    [SerializeField] TMP_InputField roomPasswordInput;
 
-    [Header("비밀방 입장 창 관련")]
+    [Header("방 입장 창 관련")]
     [SerializeField] CanvasGroup enterRoomPanel;
-    [SerializeField] TMP_InputField enterRoomPasswordInput;
+    [SerializeField] TMP_InputField enterRoomIdInput;
 
     [Header("방 생성용 프리팹")]
     [SerializeField] GameObject roomPrefab;
 
+
     //방 생성 시 아이디를 입력하지 않았을 경우 랜덤으로 만들기 위한 문자열 풀입니다.
     private string characterPool = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-    //내부적으로, 방 새로고침 기능이 실행 중임을 확인하기 위한 bool 매개변수입니다.
-    private bool isRefreshing = false;
 
     //방 UI 관리를 위한 딕셔너리입니다.
     private Dictionary <string, RoomButton> roomDictionary = new Dictionary<string, RoomButton>();
@@ -56,12 +54,10 @@ public class LobbyManager : MonoBehaviourPunCallbacks
             Debug.LogError("LobbyManager - 방 생성 시의 제목 입력 칸이 연결되지 않았습니다!");
         if (roomIdInput == null)
             Debug.LogError("LobbyManager - 방 생성 시의 방 아이디 입력 칸이 연결되지 않았습니다!");
-        if (roomPasswordInput == null)
-            Debug.LogError("LobbyManager - 방 생성 시의 비밀번호 입력 칸이 연결되지 않았습니다!");
         if (enterRoomPanel == null)
-            Debug.LogError("LobbyManager - 비밀방 입장 시 비밀번호 입력을 위한 패널이 연결되지 않았습니다!");
-        if (enterRoomPasswordInput == null)
-            Debug.LogError("LobbyManager - 비밀방 입장 시 비밀번호 입력 칸이 연결되지 않았습니다!");
+            Debug.LogError("LobbyManager - 방 입장 시 방 아이디 입력을 위한 패널이 연결되지 않았습니다!");
+        if (enterRoomIdInput == null)
+            Debug.LogError("LobbyManager - 방 입장 시 방 아이디 입력 칸이 연결되지 않았습니다!");
         if (roomPrefab == null)
             Debug.LogError("LobbyManager - 방 생성 시 출력될 방 입장 버튼 프리팹이 연결되지 않았습니다!");
         if (roomListPanel == null)
@@ -69,14 +65,27 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         #endregion
     }
 
-    private void Start()
+    private System.Collections.IEnumerator Start()
     {
+        ConnectToServer();
+        while (!PhotonNetwork.IsConnectedAndReady)
+            yield return null;
+
+        if(!PhotonNetwork.InLobby)
+        {
+            PhotonNetwork.JoinLobby();
+        }
+        else
+        {
+            OnJoinedLobby();
+        }
         //플레이어에 대한 정보를 우선 받아온 다음 로비에 진입하겠습니다.
         FirebaseDatabaseManager.Instance.LoadPlayerData();
 
+        //받아온 정보 중 다른 사람들에게 식별할 가능성을 줄 수 있는 닉네임을 포톤에 넣어주겠습니다.
+        SetMyNicknameToPhoton();
+
         Debug.Log(PhotonNetwork.NetworkClientState);
-
-
     }
 
     private void OnEnable()
@@ -89,17 +98,43 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         FirebaseDatabaseManager.Instance.OnPlayerDataChanged -= UpdateStats;
     }
 
+    public void ConnectToServer()
+    {
+        //PhotonNetwork.GameVersion = "1.0.0";
+        ////한국으로 연결합니다.
+        //PhotonNetwork.PhotonServerSettings.AppSettings.FixedRegion = "kr";
+        //PhotonNetwork.PhotonServerSettings.AppSettings.UseNameServer = true;
+
+        PhotonNetwork.ConnectUsingSettings();
+    }
+
+    public override void OnConnectedToMaster()
+    {
+        Debug.Log("ConnectedToMaster");
+
+        PhotonNetwork.JoinLobby();
+    }
+
+    public override void OnJoinedLobby()
+    {
+        Debug.Log("로비 입장에 성공했습니다. 현재 상태: " + PhotonNetwork.NetworkClientState);
+    }
+
+    public override void OnDisconnected(DisconnectCause cause)
+    {
+        Debug.LogError($"연결 끊김 발생: {cause}");
+    }
     public override void OnLeftLobby()
     {
-        //새로고침을 목적으로 나온 경우에는 아래 코드를 실행합니다.
-        if(isRefreshing == true)
-        {
-            //새로고침을 진행했다는 표시로 다시 새로고침 진행 여부를 거짓으로 돌려놓습니다.
-            isRefreshing = false;
 
-            //포톤 네트워크상으로 로비로 진입하는 것을 요청합니다.
-            PhotonNetwork.JoinLobby();
-        }
+    }
+
+    public override void OnJoinRoomFailed(short returnCode, string message)
+    {
+        Debug.LogWarning($"방 참가 실패 : {message}");
+
+        // 방이 없거나 입장 불가 → 패널 닫기
+        PanelStateChange(enterRoomPanel, false);
     }
 
     public void ExitLobby()
@@ -108,11 +143,32 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         SceneManager.LoadScene(0);
     }
 
+    public void ExitGame()
+    {
+        Application.Quit();
+    }
+
+    void SetMyNicknameToPhoton()
+    {
+        string nickname = FirebaseDatabaseManager.Instance.Data.nickname;
+
+        Hashtable props = new Hashtable
+    {
+        { "nickname", nickname }
+    };
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+    }
+    /// <summary>
+    /// 방 생성 시의 버튼이 담당할 내용입니다.
+    /// </summary>
     public void CreateRoomButtonFunction()
     {
         PanelStateChange(createRoomPanel, true);
     }
     
+    /// <summary>
+    /// 방 입장 시의 버튼이 담당할 내용입니다.
+    /// </summary>
     public void EnterRoomButtonFunction()
     {
         PanelStateChange(enterRoomPanel, true);
@@ -127,8 +183,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         //방 옵션을 새로 형성합니다.
         RoomOptions roomOptions = new RoomOptions();
 
-        //방은 모두에게 공개됩니다.
-        roomOptions.IsVisible = true;
+        //방은 공개되지 않습니다.
+        roomOptions.IsVisible = false;
 
         //방은 누군가가 들어갈 수 있습니다.
         roomOptions.IsOpen = true;
@@ -139,24 +195,8 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         //방 프로퍼티는 Hashtable형 변수입니다. 새롭게 하나 만들어줍니다.
         Hashtable property = new Hashtable();
 
-        //해당 방이 다른 이들에게 보여질 이름을 설정합니다.
+        //해당 방이 다른 이들에게 보여질 이름을 설정합니다. 사실상 방 내부 인원들에게만 보여질 제목입니다.
         property["displayname"] = roomTitleInput.text;
-
-        //방 생성 시 비밀번호를 적어두었다면
-        if(roomPasswordInput.text != null && roomPasswordInput.text != "")
-        {
-            //비밀번호를 가지고 있는 것이 참이므로
-            property["hasPassword"] = true;
-            //패스워드를 저장해줍니다.
-            property["password"] = roomPasswordInput.text;
-        }
-
-        //적어두지 않았다면
-        else
-        {
-            //비밀번호 소지 여부는 거짓이 됩니다.
-            property["hasPassword"] = false;
-        }
 
         //방의 커스텀 프로퍼티를 방금 생성한 프로퍼티로 바꾸어줍니다.
         roomOptions.CustomRoomProperties = property;
@@ -205,83 +245,55 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         string roomId; // 방을 구별할 수 있도록 각자가 고유한 방 ID를 갖도록 합니다.
 
         //방 생성 시에 텍스트를 입력하지 않은 경우, 방 아이디를 랜덤으로 생성합니다.
-        if (roomIdInput.text == null || roomIdInput.text == "")
-        {
-            roomId = RandomRoomIdCreation();
-        }
-        //입력한 경우, 해당 아이디를 가진 채로 생성하도록 합니다.
-        else
-        {
-            roomId = roomIdInput.text;
-        }
+        roomId = string.IsNullOrWhiteSpace(roomIdInput.text)? RandomRoomIdCreation() : roomIdInput.text;
         #endregion
 
         //포톤에서 해당 ID와 방 옵션을 가지도록 방을 생성합니다.
         PhotonNetwork.CreateRoom(roomId, roomOptions);
 
-        ////방이 가지는 옵션들을 플레이어한테 보여줄, 방 입장용 버튼을 방 리스트 패널의 자식 오브젝트로 생성합니다.
+        //방이 가지는 옵션들을 플레이어한테 보여줄, 방 입장용 버튼을 방 리스트 패널의 자식 오브젝트로 생성합니다.
         //var room = Instantiate(roomPrefab, roomListPanel);
 
     }
-    
+
+    public void RoomSearchButtonFunction()
+    {
+        SearchRoom(enterRoomIdInput.text);
+    }
+
+    public void SearchRoom(string text)
+    {
+        // 입력값 방어
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            Debug.Log("방 ID가 입력되지 않았습니다.");
+            PanelStateChange(enterRoomPanel, false);
+            return;
+        }
+
+        // 서버에 연결되어 있지 않다면 시도 불가
+        if (!PhotonNetwork.IsConnectedAndReady)
+        {
+            Debug.LogWarning("서버에 연결되어 있지 않습니다.");
+            PanelStateChange(enterRoomPanel, false);
+            return;
+        }
+
+        Debug.Log($"방 참가 시도 : {text}");
+
+        // 방 ID = RoomName 이라고 가정
+        PhotonNetwork.JoinRoom(text);
+    }
+
     public void UpdateRoomList()
     {
-        //이 기능은 로비에서만 사용할 것이므로, 로비 이외의 공간일 경우 뒤 코드는 실행하지 않습니다.
-        if (!PhotonNetwork.InLobby) return;
-
-        //새로고침이 진행중입니다.
-        isRefreshing = true;
-
-        //현재까지 만들어져 있는 방 UI를 초기화합니다.
-        //ClearRoomListUI();
-
-        //로비에서 임시로 나갑니다.
-        PhotonNetwork.LeaveLobby();
+        
     }
 
-    public override void OnRoomListUpdate(List<RoomInfo> roomList)
-    {
-        //방 리스트에 있는 각 방들의 정보로부터 다음 코드를 실행합니다.
-        foreach(RoomInfo roomInfo in roomList)
-        {
-            //방이 리스트로부터 삭제된 경우, 즉 방 내에 사람이 존재하지 않는 경우
-            if (roomInfo.RemovedFromList)
-            {
-                //Dictionary로부터 해당 키가 있다면
-                if (roomDictionary.ContainsKey(roomInfo.Name))
-                {
-                    //해당 키를 파괴하고
-                    Destroy(roomDictionary[roomInfo.Name]);
-                    //Dictionary에서 해당 키와 값을 없앤 뒤
-                    roomDictionary.Remove(roomInfo.Name);
-                }
-                //다음 방 정보로 이동합니다.
-                continue;
-            }
-
-            //방 Dictionary가 해당 방의 이름을 Key값으로 갖고 있지 않은 경우, 즉 방이 새로 생성된 경우
-            if(!roomDictionary.ContainsKey(roomInfo.Name))
-            {
-                //해당 방에 대한 프리팹을 생성합니다. (버튼)
-                var room = Instantiate(roomPrefab, roomListPanel);
-
-                //생성한 방 버튼으로부터, roomButton 클래스파일을 불러옵니다.
-                var roomButton = room.GetComponent<RoomButton>();
-
-                //해당 roomButton 클래스로부터, 현재 방의 정보에 대한 값을 출력하도록 하는 기능을 실행합니다.
-                roomButton.SetData(roomInfo);
-
-                //그렇게 완성된 방을 Dictionary에 추가합니다.
-                roomDictionary.Add(roomInfo.Name, roomButton);
-            }
-
-            //방 Dictionary가 해당 방의 이름을 Key값으로 가지고 있으며, 삭제된 경우도 아닌 경우
-            //방에 대한 정보를 다시 한번 출력시킵니다.
-            else
-                roomDictionary[roomInfo.Name].SetData(roomInfo);
-        }
-    }
-
+    /// <summary>
+    /// 플레이어의 데이터로부터 필요한 정보를 출력합니다.
+    /// </summary>
+    /// <param name="data">서버상에 기록되어 있는 해당 유저의 데이터</param>
     public void UpdateStats(PlayerData data)
     {
         playerNicknameText.text = data.nickname;
