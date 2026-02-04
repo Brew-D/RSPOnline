@@ -57,6 +57,7 @@ public class WeaponManager : MonoBehaviourPun
 
         currentWeapon = Weapon.GetComponent<Weapon>();
         playerManager.weapon = currentWeapon;
+        playerManager.weaponType = type;
         playerManager.weapon.SetEffectSpawnPoint(playerManager.effectTransform);
 
         GameManager.Instance.OnSelectWeapon();

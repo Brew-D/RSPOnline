@@ -11,6 +11,7 @@ public class WeaponHitbox : MonoBehaviour
     private void Start()
     {
         attackRange = GetComponent<BoxCollider>();
+        if(attackRange != null )
         attackRange.enabled = false;
     }
 
@@ -31,6 +32,7 @@ public class WeaponHitbox : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (weapon.hitbox == null) return;
         //부딪힌 대상으로부터 PlayerManager을 받아오도록 시도합니다.
         if (!other.TryGetComponent(out PlayerManager target)) return;
 

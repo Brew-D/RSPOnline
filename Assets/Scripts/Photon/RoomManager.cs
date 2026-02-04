@@ -2,7 +2,9 @@
 using Photon.Pun;
 using Photon.Realtime;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,8 +21,9 @@ public class RoomManager : MonoBehaviourPunCallbacks
     [Header("퇴장 버튼 관련")]
     [SerializeField] Button exitButton;
 
-    [Header("각 슬롯별 이미지 연결")]
-    [SerializeField] List<RoomPlayerSlot> slots;
+    [Header("UI 관련")]
+    public GameObject[] panelArray;
+    public TextMeshProUGUI[] textArray;
 
     void Awake()
     {
@@ -43,6 +46,9 @@ public class RoomManager : MonoBehaviourPunCallbacks
         //서버 커넥터 기준, 방에 입장했을 경우 해당 방에서의 권한을 확인합니다.
         ServerConnector.OnJoinedRoomEvent += HandleJoinedRoom;
 
+        ServerConnector.OnPlayerListChanged += UpdatePlayerCount;
+        ServerConnector.OnPlayerListChanged += UpdatePlayerUI;
+
         //퇴장 버튼에 방을 떠나도록 하는 코드를 추가합니다.
         exitButton.onClick.AddListener(LeaveRoom);
     }
@@ -50,6 +56,9 @@ public class RoomManager : MonoBehaviourPunCallbacks
     {
         //서버 커넥터 기준, 방 입장 후 권한을 확인하는 기능을 제거합니다.
         ServerConnector.OnJoinedRoomEvent -= HandleJoinedRoom;
+
+        ServerConnector.OnPlayerListChanged -= UpdatePlayerCount;
+        ServerConnector.OnPlayerListChanged -= UpdatePlayerUI;
 
         //퇴장 버튼을 눌러 씬을 이탈했을 것이므로 해당 코드 또한 제거합니다.
         exitButton.onClick.RemoveListener(LeaveRoom);
@@ -69,7 +78,12 @@ public class RoomManager : MonoBehaviourPunCallbacks
         roomIdText.text = room.Name; // 방의 아이디값
         roomTitleText.text = room.CustomProperties["displayname"].ToString(); // 방의 제목
         roomPlayerCountText.text = $"{room.PlayerCount}/{room.MaxPlayers}"; // 방의 플레이어 수
-        
+
+        InitializeSlots();
+        UpdatePlayerUI();
+
+        HandleJoinedRoom();
+
 
     }
 
@@ -106,33 +120,48 @@ public class RoomManager : MonoBehaviourPunCallbacks
         startButton.gameObject.SetActive(isMaster);
     }
 
-    /// <summary>
-    /// 슬롯에 플레이어 관련 정보가 갱신될 때 호출할 메서드입니다.
-    /// </summary>
-    void RefreshPlayerSlots()
+    void InitializeSlots()
     {
-        //포톤네트워크의 플레이어 리스트로부터 플레이어 배열을 받아옵니다.
-        Player[] players = PhotonNetwork.PlayerList;
-
-        for (int i = 0; i < slots.Count; i++)
+        for (int i = 0; i < 8; i++)
         {
-            //현재 존재하는 플레이어의 수보다 i값이 낮으면 존재한다는 것이므로
-            if (i < players.Length)
-            {
-                // 닉네임 표시 코드 작성
+            panelArray[i].SetActive(true);
 
-                //해당 슬롯 보이도록 변경
-                slots[i].gameObject.SetActive(true);
+            // 패널을 살짝 진하게
+            Image img = panelArray[i].GetComponent<Image>();
+            if (img != null)
+                img.color = new Color(0, 0, 0, 0.5f);
+
+            textArray[i].text = "-";
+        }
+    }
+
+    void UpdatePlayerUI()
+    {
+        // 방에 있는 플레이어들을 ActorNumber 기준으로 정렬
+        Player[] players = PhotonNetwork.PlayerList
+            .OrderBy(p => p.ActorNumber)
+            .ToArray();
+
+        // 슬롯 초기화
+        for (int i = 0; i < 8; i++)
+        {
+            textArray[i].text = "-";
+        }
+
+        // 들어온 순서대로 채우기
+        for (int i = 0; i < players.Length; i++)
+        {
+            if (i >= 8)
+                break;
+
+            string nickname = "-";
+
+            if (players[i].CustomProperties.TryGetValue("nickname", out object nick))
+            {
+                nickname = nick.ToString();
             }
 
-            //현재 존재하는 플레이어 수보다 i값이 높으면 존재하지 않는 것이므로
-            else
-            {
-                // 이미 존재하던 기존 데이터 비우기
-
-                //해당 슬롯 비활성화
-                slots[i].gameObject.SetActive(false);
-            }
+            textArray[i].text = nickname;
         }
     }
 
@@ -158,8 +187,6 @@ public class RoomManager : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         UpdatePlayerCount();
-        //BindPlayerToSlot();
-        RefreshPlayerSlots();
     }
 
     /// <summary>
@@ -169,7 +196,7 @@ public class RoomManager : MonoBehaviourPunCallbacks
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         UpdatePlayerCount();
-        RefreshPlayerSlots();
+        UpdatePlayerUI();
     }
 
     /// <summary>
@@ -186,8 +213,20 @@ public class RoomManager : MonoBehaviourPunCallbacks
     /// </summary>
     public override void OnJoinedRoom()
     {
-        RefreshPlayerSlots();
+        UpdatePlayerCount();
+        UpdatePlayerUI();
         RefreshButton();
+    }
+
+    public override void OnPlayerPropertiesUpdate(
+    Player targetPlayer,
+    ExitGames.Client.Photon.Hashtable changedProps
+)
+    {
+        if (changedProps.ContainsKey("nickname"))
+        {
+            UpdatePlayerUI();
+        }
     }
 
     /// <summary>

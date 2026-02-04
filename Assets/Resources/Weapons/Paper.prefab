@@ -68,9 +68,6 @@ PrefabInstance:
       addedObject: {fileID: 3612614877992227612}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 071ada240865305468218e3d88cba4b8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4174702007031531775}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 071ada240865305468218e3d88cba4b8, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 8830783993007103871}
   m_SourcePrefab: {fileID: 100100000, guid: 071ada240865305468218e3d88cba4b8, type: 3}
 --- !u!1 &5054498126938209303 stripped
@@ -91,21 +88,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Weapon
   weaponEffectPrefab: {fileID: 5087292579886230414, guid: b21913e63e35a71418a11e1876d9a965, type: 3}
+  weaponType: 1
   effectSpawnPoint: {fileID: 0}
   data: {fileID: 11400000, guid: fc768cebcad9a84418a8086a19568c11, type: 2}
   hitbox: {fileID: 0}
---- !u!114 &4174702007031531775
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5054498126938209303}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e61987bdc9086d40864fea46bfe03f3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WeaponHitbox
 --- !u!136 &8830783993007103871
 CapsuleCollider:
   m_ObjectHideFlags: 0

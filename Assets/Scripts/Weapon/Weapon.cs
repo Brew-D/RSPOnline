@@ -7,6 +7,7 @@ public class Weapon : MonoBehaviourPun
 {
     [Header("공격 이펙트 관련")]
     [SerializeField] WeaponEffect weaponEffectPrefab;
+    [SerializeField] WeaponType weaponType;
     [SerializeField] Transform effectSpawnPoint;
 
     //각각의 무기는 무기로서의 정보를 담고 있습니다.
@@ -18,7 +19,8 @@ public class Weapon : MonoBehaviourPun
 
     private void Awake()
     {
-        hitbox.Init(this); // 히트박스에 무기를 담습니다.
+        if(hitbox != null)
+            hitbox.Init(this); // 히트박스에 무기를 담습니다.
         isAttacking = false;
     }
     public void SetEffectSpawnPoint(Transform spawnPoint)
@@ -68,7 +70,7 @@ public class Weapon : MonoBehaviourPun
     /// <param name="target">피격된 대상</param>
     public void ProcessHit(PlayerManager target)
     {
-        target.TakeHit(this.data.weaponType); // 맞은 대상에게 피격 시의 코드를 실행하도록 합니다.
+        target.TakeHit(weaponType); // 맞은 대상에게 피격 시의 코드를 실행하도록 합니다.
     }
 
     public void PlayAttackEffect(PlayerManager player)

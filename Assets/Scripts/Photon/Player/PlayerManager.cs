@@ -19,6 +19,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks, IPunObservable
 {
     [Header("무기 관련")]
     public Weapon weapon;
+    public WeaponType weaponType;
     public Transform effectTransform;
 
     [Header("캐릭터 컨트롤러")]
@@ -50,7 +51,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks, IPunObservable
 
     public bool isGrounded = false;      // 땅에 닿고 있는지 여부를 확인합니다. 공중에서 시작하므로 시작값은 false입니다.
 
-    private PlayerControlMode controlMode = PlayerControlMode.Room; // 조작 모드입니다. Room일 경우 조작방지, Game일 경우 해제 상태입니다.
+    private PlayerControlMode controlMode = PlayerControlMode.Game; // 조작 모드입니다. Room일 경우 조작방지, Game일 경우 해제 상태입니다.
     private PlayerInput playerInput;                                // 플레이어의 조작은 InputSystem을 이용해 받을 예정입니다.
     private Vector2 moveInput;                                      // 바닥에서의 움직임을 제어하기 위한 Vector2 입력값입니다.
     private Vector3 velocity;                                       // Rigidbody 이동 제어를 위한 velocity 입니다.
@@ -66,6 +67,12 @@ public class PlayerManager : MonoBehaviourPunCallbacks, IPunObservable
 
     private void Awake()
     {
+        //할당받은 플레이어를 조작하기 위한 컨트롤러를 받아옵시다.
+        if(controller == null)
+            controller = GetComponent<CharacterController>();
+        if (animator == null)
+            animator = GetComponent<Animator>();
+        playerInput = GetComponent<PlayerInput>();
         //포톤 뷰 기준으로 캐릭터가 생성될 텐데, 플레이어의 포톤 뷰일 경우에만 작동하게 설계합니다.
         if(photonView.IsMine == true)
         {
@@ -75,13 +82,10 @@ public class PlayerManager : MonoBehaviourPunCallbacks, IPunObservable
         else
         {
             gameObject.layer = LayerMask.NameToLayer("HiddenPlayer");
+
+            if (playerInput != null) playerInput.enabled = false;
+            if(controller != null) controller.enabled = false;
         }
-            playerInput = GetComponent<PlayerInput>();
-        //할당받은 플레이어를 조작하기 위한 컨트롤러를 받아옵시다.
-        if(controller == null)
-            controller = GetComponent<CharacterController>();
-        if (animator == null)
-            animator = GetComponent<Animator>();
     }
 
     private void OnEnable()
@@ -97,7 +101,9 @@ public class PlayerManager : MonoBehaviourPunCallbacks, IPunObservable
     {
         //내가 조작하는 캐릭터일 경우, 카메라가 따라올 대상을 해당 캐릭터로 설정합니다.
         if(photonView.IsMine == true)
+        {
             Camera.main.GetComponent<CameraMovement>().target = transform;
+        }    
 
         DecidePlayerLayer();
     }
@@ -382,6 +388,21 @@ public class PlayerManager : MonoBehaviourPunCallbacks, IPunObservable
     #endregion
 
     #region 그 외
+
+    public void SelectWeapon(WeaponType type)
+    {
+        if (!photonView.IsMine)
+            return;
+
+        ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable
+        {
+            { "WeaponType", (int)type },
+            { "Ready", true }
+        };
+
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+    }
+
     /// <summary>
     /// 플레이어의 레이어를 지정합니다.
     /// </summary>
@@ -423,7 +444,7 @@ public class PlayerManager : MonoBehaviourPunCallbacks, IPunObservable
         //RPSEffectiveChecker 클래스를 통해, 상성 데이터 구조를 받아옵니다.
         int result = RPSEffectiveChecker.Resolve(
             attackerType,
-            weapon.data.weaponType
+            weaponType
             );
 
         //결과값이 1이 나왔을 경우 상성에 의해 피해량이 늘어 4의 데미지를 받습니다.

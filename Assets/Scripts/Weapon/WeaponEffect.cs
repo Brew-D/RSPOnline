@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Photon.Pun;
 using UnityEngine;
 
 public class WeaponEffect : MonoBehaviour
@@ -47,7 +48,7 @@ public class WeaponEffect : MonoBehaviour
         Quaternion spawnRot =
             Quaternion.LookRotation(attacker.forward);
 
-        Instantiate(effectPrefab, spawnPos, spawnRot);
+        PhotonNetwork.Instantiate("effectPrefab", spawnPos, spawnRot);
     }
 
     IEnumerator Swing()

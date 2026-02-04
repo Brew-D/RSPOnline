@@ -82,10 +82,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         //플레이어에 대한 정보를 우선 받아온 다음 로비에 진입하겠습니다.
         FirebaseDatabaseManager.Instance.LoadPlayerData();
 
-        //받아온 정보 중 다른 사람들에게 식별할 가능성을 줄 수 있는 닉네임을 포톤에 넣어주겠습니다.
-        SetMyNicknameToPhoton();
-
-        Debug.Log(PhotonNetwork.NetworkClientState);
+        FirebaseDatabaseManager.Instance.OnPlayerDataChanged += OnPlayerDataLoaded;
     }
 
     private void OnEnable()
@@ -96,6 +93,12 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     private void OnDisable()
     {
         FirebaseDatabaseManager.Instance.OnPlayerDataChanged -= UpdateStats;
+    }
+
+    public void OnPlayerDataLoaded(PlayerData data)
+    {
+        //받아온 정보 중 다른 사람들에게 식별할 가능성을 줄 수 있는 닉네임을 포톤에 넣어주겠습니다.
+        SetMyNicknameToPhoton();
     }
 
     public void ConnectToServer()

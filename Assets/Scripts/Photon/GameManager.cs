@@ -1,4 +1,6 @@
-﻿using Photon.Pun;
+﻿using ExitGames.Client.Photon;
+using Photon.Pun;
+using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -55,11 +57,9 @@ public class GameManager : MonoBehaviourPunCallbacks
     /// <param name="player">무기를 선택한 플레이어</param>
     public void OnPlayerWeaponSelected(PlayerManager player)
     {
-        // 중복 선택을 방지하는 용도입니다.
         if (player.IsReady)
             return;
 
-        //플레이어의 준비 상태를 변경해줍니다.
         player.ChangeReadyState(true);
 
         //스폰 포인트를 할당하기 위해, Index를 받아옵니다.
@@ -90,6 +90,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
+
     /// <summary>
     /// 무기를 골랐을 때의 콜백입니다.
     /// </summary>
@@ -102,6 +103,34 @@ public class GameManager : MonoBehaviourPunCallbacks
             RpcTarget.MasterClient,
             PhotonNetwork.LocalPlayer.ActorNumber
         );
+    }
+
+    public override void OnPlayerPropertiesUpdate(
+    Player targetPlayer,
+    ExitGames.Client.Photon.Hashtable changedProps)
+    {
+        Debug.Log($"[PropsUpdate] player={targetPlayer.ActorNumber}");
+
+        if (!changedProps.ContainsKey("WeaponType"))
+            return;
+
+        Debug.Log($"[PropsUpdate] WeaponType changed");
+
+        if (targetPlayer.TagObject == null)
+        {
+            Debug.LogError("TagObject is NULL!");
+            return;
+        }
+
+        PlayerManager player = targetPlayer.TagObject as PlayerManager;
+        Debug.Log($"PlayerManager found: {player.name}");
+
+        WeaponType type =
+            (WeaponType)(int)changedProps["WeaponType"];
+
+
+        player.SelectWeapon(type);
+        OnPlayerWeaponSelected(player);
     }
 
     /// <summary>
@@ -170,9 +199,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         //플레이어가 방에 있는지 확인할 때까지 기다립니다. (보통 게임씬일 테니 방에 있을 것입니다)
         yield return new WaitUntil(() => PhotonNetwork.InRoom);
         //플레이어가 조작할 캐릭터는, 포톤네트워크에서 생성하는, (Resources 폴더 내의)플레이어 프리팹을, 높이 5의 공간에, 회전 없이 생성합니다.
-        PlayerManager.LocalPlayerInstance = PhotonNetwork.Instantiate(playerPrefab.name, new Vector3(0, 2000, 2203), Quaternion.identity);
-        //플레이어가 조작할 캐릭터의 플레이어매니저 클래스를 가져와, 현재 조작 모드를 게임으로 설정하여 게임 씬 전용 조작이 가능하게 합니다.
-        PlayerManager.LocalPlayerInstance.GetComponent<PlayerManager>().SetControlMode(PlayerControlMode.Game);
+        PhotonNetwork.Instantiate(playerPrefab.name, new Vector3(0, 2000, 2203), Quaternion.identity);
     }
 
     /// <summary>

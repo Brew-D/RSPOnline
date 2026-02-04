@@ -2,6 +2,7 @@
 using Photon.Realtime;
 using System;
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,6 +11,7 @@ public class ServerConnector : MonoBehaviourPunCallbacks
     public static ServerConnector Instance;
 
     public static event Action OnJoinedRoomEvent;
+    public static event Action OnPlayerListChanged;
 
     private void Awake()
     {
@@ -36,7 +38,17 @@ public class ServerConnector : MonoBehaviourPunCallbacks
         }
     }
 
-    
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        OnPlayerListChanged?.Invoke();
+    }
+
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        OnPlayerListChanged?.Invoke();
+    }
+
 
     public override void OnJoinedRoom()
     {
